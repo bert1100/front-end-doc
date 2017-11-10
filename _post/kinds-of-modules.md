@@ -30,20 +30,39 @@ exports.add = function(a,b){
 #### 模块的使用
 
 ```javascript
+
+// 从全局或者node_modules中require模块,可忽略
+// require("someModules");
+// 从当前目录中require自定义的模块，一般不可忽略后缀名.js
+// require("./somefile.js")
+
 var math = require("math");
 math.add(2,3);  // =>5
 ```
+
+#### 谁在用
+
+- 服务器端的nodejs（当然了，你本地上跑的nodejs也算哦）
+- Browserify,浏览器端的CommonJS实现，可以使用npm模块，但编译打包后的文件体积可能很大
+
+
+
 
 ## AMD
 
 异步加载模块定义规范
 
-> AMD是”Asynchronous ModuleDefinition”的缩写， 即”异步模块定义”。它采用异步方式加载模块，模块的加载不影响它后面语句的运行。 这里异步指的是不堵塞浏览器其他任务（dom构建，css渲染等），而加载内部是同步的（加载完模块后立即执行回调）。
+> AMD是”Asynchronous ModuleDefinition”的缩写（Asynchronous读音：/ei'siŋkrənəs/ ），即”异步模块定义”。它采用异步方式加载模块，模块的加载不影响它后面语句的运行。 这里异步指的是不堵塞浏览器其他任务（dom构建，css渲染等），而加载内部是同步的（加载完模块后立即执行回调）。
 
 ### 特性features
 
 - 依赖前置：当有多个依赖时，`必须`将所有的依赖都写在define()函数第一个参数数组中。
 - 异步加载：它会当require中第一个参数数组中的依赖模块加载完，才进行callback回调。
+> 在这里，很多人会认为，这不是同步的表现么？！其实，这并不冲突。注意`异步`的本质概念；代码运行并没有阻塞而停止下来，仍然会执行后面的其他代码。
+
+- 适合在浏览器环境中异步加载模块
+- 可以并行加载多个模块
+> 但是太难书写了，不符合通用模块化思维方式
 
 ### 写法示例
 
@@ -51,7 +70,7 @@ math.add(2,3);  // =>5
 
 ```javascript
 
-// 定义语法：define(id?, dependencies?, factory) 
+// 定义语法：define(id?, dependencies?, factory)
 // @param id?: 模块名字，默认为模块的文件名
 // @param dependencies?: 模块的依赖标识，数组字面量,可忽略。
 // @param factory: 模块的工厂函数，模块初始化要执行的函数或对象，若有return的对象即为模块的输出exports.
@@ -70,6 +89,8 @@ define(['a', 'b'], function(a, b) {
 
 ```
 
+
+
 #### 模块的使用
 
 ```javascript
@@ -79,10 +100,13 @@ require(['math'],function(math){ // 提示：所依赖的模块必须放在文�
 })
 ```
 
+#### 谁在用
+- RequireJS
+- curl
 
 
 ## CMD
-
+Common Module Definition 规范，尽量保持简单，和CommonJS保持了最大的兼容性。
 seajs的CMD推崇**依赖就近，延迟执行**。可以把你的依赖写进代码的任意一行，和AMD不同。
 
 > define(factory)中的`factory`为函数时，表示是模块的构造方法。执行该构造方法，可以得到模块向外提供的接口。factory 方法在执行时，默认会传入三个参数：require、exports 和 module.
@@ -93,6 +117,8 @@ seajs的CMD推崇**依赖就近，延迟执行**。可以把你的依赖写进�
 
 - 依赖就近：写到哪儿，哪里就能require
 - 延迟执行：按需异步加载后，再执行。
+- 可以很容易在Node.js中运行
+> 缺点： 依赖SPM打包，模块的加载逻辑偏重。也就是说不好打包。
 
 ### 写法示例
 
@@ -131,6 +157,11 @@ seajs.use(['./a', './b'], function(a, b) {
   b.doSomething();
 });
 ```
+
+#### 谁在用
+- Seajs
+- coolie
+
 
 ## es6
 
@@ -200,7 +231,7 @@ import {a as aa, b, c};
 console.log(aa, b, c)
 
 // main3.js ---import语句可以和export语句写在一起
-import {a, b, c} form './abc';
+import {a, b, c} from './abc';
 export {a, b,  c}
 
 // 使用连写, 可读性不好，不建议
@@ -211,12 +242,15 @@ import {default as aa} from './abc';
 console.log(aa);
 ```
 
-
+#### 谁实现了它
+- BaBel
+> 读音： /ˈbebəl/
 
 
 
 ## UMD
 
+Universal Module Definition 规范是一个类似于 CommonJS 和 AMD的语法糖，它似乎去解决模块定义的跨平台问题。
 解决不同加载规范的规范。
 
 > 由于CommonJS是服务器端的规范，跟AMD、CMD两个标准实际不冲突。当我们写一个文件需要兼容不同的加载规范的时候怎么办呢?
